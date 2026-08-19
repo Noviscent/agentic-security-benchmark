@@ -9,6 +9,13 @@ re-run any scanner and does not touch scanner rules. It exists so that a
 future edit to a triage CSV, a raw JSON file, or score-results.py's own
 arithmetic cannot silently drift the published numbers without CI noticing.
 
+Since v0.1.1 remediation, this gate also passes --ground-truth
+methodology/ground-truth.csv to score-results.py, which enforces that every
+scenario_id in the triage log exists in ground-truth.csv and every in-scope
+ground-truth scenario is covered by at least one triage row. This prevents
+the recall denominator from being silently manipulated by adding or removing
+scenario rows from the triage log without matching ground-truth.csv.
+
 Usage (run from this directory, i.e. the package root):
     python3 scripts/golden-metrics-check.py
 """
@@ -59,6 +66,7 @@ def run_scorer(sarif_dir: str, triage: str):
         [sys.executable, str(PACKAGE_ROOT / "scripts" / "score-results.py"),
          "--sarif-dir", str(PACKAGE_ROOT / sarif_dir),
          "--triage", str(PACKAGE_ROOT / triage),
+         "--ground-truth", str(PACKAGE_ROOT / "methodology" / "ground-truth.csv"),
          "--score"],
         capture_output=True, text=True,
     )

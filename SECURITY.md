@@ -36,7 +36,7 @@ reading this repository, do not open a public issue here. Email
   structure, rule IDs, paths, and line numbers are preserved. See
   `NOTICE.md` and `evidence/redaction-manifest.json` (round 5).
 - **Local file paths and machine/user identifiers.** Raw evidence was swept
-  and redacted for absolute local filesystem paths across four rounds (see
+  and redacted for absolute local filesystem paths across five rounds (see
   below) before staging. If you find another instance, treat it as a bug in
   this package and report it as a bug in this repository.
 
@@ -46,9 +46,9 @@ Before this package was assembled, every file under `evidence/` and
 `methodology/` was checked for: AWS-format credentials outside the
 known-fixture set, private key headers, `noviscent.ca`/`@noviscent.*`
 internal references, ClickUp URLs, AWS ARNs/account IDs, and absolute local
-filesystem paths. This happened across four rounds — each round's sweep
+filesystem paths. This happened across five rounds — each round's sweep
 was incomplete in a way the next round's review or tooling caught, not
-self-discovered ahead of time; all four rounds are disclosed here rather
+self-discovered ahead of time; all five rounds are disclosed here rather
 than only the clean end state:
 
 - **Round 1** found and fixed WSL/Linux local paths under a developer's

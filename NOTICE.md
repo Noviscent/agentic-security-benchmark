@@ -76,9 +76,15 @@ reviewed or approved this repository's content.
 
 ## Noviscent's own content
 
+Copyright 2026 Noviscent Inc.
+
 Everything else in this repository — the protocol, ground truth, results
-narratives, triage judgments and rationale, manifests, and this notice — is
-Noviscent-authored and covered by `LICENSE`.
+narratives, triage judgments and rationale, manifests, scripts, and this
+notice — is Noviscent-authored and covered by the Apache License, Version 2.0
+(see `LICENSE`). The license covers the Noviscent-authored content of this
+repository. It does NOT cover third-party material referenced or reproduced
+here — the target codebases, scanner outputs, and taxonomy references listed
+above are governed by their respective licenses and terms.
 
 **Not included:** Noviscent's detection rule source code (the Semgrep
 pattern files under `backend/packs/` in Noviscent's private AI-SAST repository).

@@ -19,9 +19,12 @@ Usage (run from this directory, i.e. the package root):
 
 Exit code 0 = clean. Exit code 1 = one or more findings (printed to stdout).
 """
+from __future__ import annotations
+
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 PACKAGE_ROOT = Path(__file__).resolve().parent.parent
@@ -81,6 +84,14 @@ AWS_ACCESS_KEY_RE = re.compile(r"\bAKIA[0-9A-Z]{16}\b")
 # Files this gate does not scan: its own source (the patterns above would
 # trip on themselves) and anything git-ignores already excludes.
 SELF_EXCLUDE = {"scripts/publication-hygiene-check.py"}
+
+# Tracked files that are explicitly classified as binary artifacts and are
+# not expected to decode as UTF-8 or UTF-16. If a tracked file cannot be
+# decoded and is NOT in this set, the gate fails CI. This prevents a
+# repeat of the round-4 incident where a UTF-16 PowerShell transcript log
+# containing real path leaks was silently skipped because the gate's
+# reader only handled UTF-8 at the time.
+ALLOWED_BINARY_FILES = set()
 
 # These two files intentionally, disclosedly narrate the redaction
 # incidents in prose -- SECURITY.md's "Redaction pass performed before
@@ -142,11 +153,13 @@ def _backtick_quoted(line: str, start: int, end: int) -> bool:
     """True if the matched span [start:end) is immediately wrapped in a
     single backtick on each side, e.g. the [YEAR] in `[YEAR]`. This is a
     deliberate Markdown authoring signal for "this is a literal pattern
-    being described/quoted," not a live instance of it -- e.g. this very
-    script's own documentation, or a doc explaining what a CI gate checks
-    for, needs to be able to name its patterns without tripping itself.
-    Does not apply to JSON files (no backtick convention there); those use
-    NARRATIVE_EXEMPT_FILES instead."""
+    being described/quoted," not a live instance of it.
+
+    IMPORTANT: the backtick exemption is ONLY applied to benign
+    documentation patterns (narrative_exempt_eligible=True). It is NEVER
+    applied to credential, private-key, or other security-sensitive
+    patterns, regardless of formatting. A backticked `AKIAIOSFODNN7EXAMPLE`
+    or `-----BEGIN PRIVATE KEY-----` is still a finding."""
     return start > 0 and end < len(line) and line[start - 1] == "`" and line[end] == "`"
 
 
@@ -158,10 +171,19 @@ def scan_file(rel_path: str, text: str):
             if exempt and narrative_exempt_eligible:
                 continue
             m = pattern.search(line)
-            if m and not _backtick_quoted(line, m.start(), m.end()):
+            if m:
+                # Backtick exemption ONLY applies to named narrative files
+                # (NARRATIVE_EXEMPT_FILES) and only for benign documentation
+                # patterns (narrative_exempt_eligible=True). For all other
+                # files, backticks do not exempt anything. Credential,
+                # private-key, and other security-sensitive patterns are
+                # NEVER exempted by backtick formatting, in any file.
+                if (exempt and narrative_exempt_eligible
+                        and _backtick_quoted(line, m.start(), m.end())):
+                    continue
                 findings.append((rel_path, lineno, label, line.strip()[:160]))
         for m in AWS_ACCESS_KEY_RE.finditer(line):
-            if m.group(0) not in KNOWN_FIXTURE_ALLOWLIST and not _backtick_quoted(line, m.start(), m.end()):
+            if m.group(0) not in KNOWN_FIXTURE_ALLOWLIST:
                 findings.append((rel_path, lineno, "AWS access key ID (not the disclosed demo fixture)", line.strip()[:160]))
     return findings
 
@@ -180,14 +202,8 @@ def main():
         all_findings.extend(scan_file(rel_path, text))
 
     if undecodable:
-        print(
-            f"WARNING: {len(undecodable)} tracked file(s) could not be decoded as "
-            "UTF-8 or UTF-16 and were NOT scanned by this gate -- verify them by "
-            "hand before publishing:"
-        )
         for rel_path in undecodable:
-            print(f"  {rel_path}")
-        print()
+            all_findings.append((rel_path, 0, "undecodable tracked content (not UTF-8 or UTF-16, and not in ALLOWED_BINARY_FILES)", ""))
 
     if all_findings:
         print(f"Publication hygiene check FAILED -- {len(all_findings)} finding(s):\n")
@@ -206,5 +222,136 @@ def main():
     )
 
 
+# ---------------------------------------------------------------------------
+# selftest: proves the gate catches each fail-open path, using a disposable
+# scratch git repo. Never touches this package's real files.
+# ---------------------------------------------------------------------------
+
+def _scratch_repo(tmp: Path) -> Path:
+    pkg = tmp / "pkg"
+    (pkg / "evidence" / "raw").mkdir(parents=True)
+    run_git_init(tmp)
+    return pkg
+
+
+def run_git_init(tmp: Path):
+    subprocess.run(["git", "init", "-q"], cwd=tmp, capture_output=True, check=True)
+    subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=tmp, capture_output=True, check=True)
+    subprocess.run(["git", "config", "user.name", "Test"], cwd=tmp, capture_output=True, check=True)
+
+
+def _commit_all(tmp: Path, message: str):
+    subprocess.run(["git", "add", "-A"], cwd=tmp, capture_output=True, check=True)
+    subprocess.run(["git", "commit", "-q", "-m", message], cwd=tmp, capture_output=True, check=True)
+
+
+def _scan_scratch(tmp: Path, pkg: Path) -> list:
+    """Run scan_file against each tracked file in the scratch repo."""
+    tracked_out = subprocess.run(
+        ["git", "ls-tree", "-r", "--name-only", "HEAD", "--", "pkg"],
+        cwd=tmp, capture_output=True, text=True, check=True,
+    )
+    tracked = sorted(
+        Path(p).relative_to("pkg").as_posix()
+        for p in tracked_out.stdout.splitlines() if p
+    )
+    findings = []
+    for rel_path in tracked:
+        if rel_path in SELF_EXCLUDE:
+            continue
+        full_git_path = f"pkg/{rel_path}"
+        out = subprocess.run(
+            ["git", "show", f"HEAD:{full_git_path}"],
+            cwd=tmp, capture_output=True,
+        )
+        if out.returncode != 0:
+            continue
+        text = None
+        for enc in ("utf-8", "utf-16"):
+            try:
+                text = out.stdout.decode(enc)
+                break
+            except UnicodeDecodeError:
+                continue
+        if text is None:
+            if rel_path not in ALLOWED_BINARY_FILES:
+                findings.append((rel_path, 0, "undecodable tracked content", ""))
+            continue
+        findings.extend(scan_file(rel_path, text))
+    return findings
+
+
+def _case_undecodable_file_fails() -> str | None:
+    with tempfile.TemporaryDirectory() as t:
+        tmp = Path(t)
+        pkg = _scratch_repo(tmp)
+        (pkg / "evidence" / "raw" / "binary.bin").write_bytes(b"\xff\xfe\x00\x01\x02\xff")
+        _commit_all(tmp, "add undecodable binary file")
+        findings = _scan_scratch(tmp, pkg)
+        if not any("undecodable" in f[2] for f in findings):
+            return f"expected an undecodable-file failure, got: {findings}"
+    return None
+
+
+def _case_backticked_path_in_evidence_fails() -> str | None:
+    with tempfile.TemporaryDirectory() as t:
+        tmp = Path(t)
+        pkg = _scratch_repo(tmp)
+        (pkg / "evidence" / "raw" / "notes.md").write_text("Found `/home/developer/` path in output.\n")
+        _commit_all(tmp, "add evidence file with backticked internal path")
+        findings = _scan_scratch(tmp, pkg)
+        if not any("backticked" in str(f) or "/home/" in f[2] for f in findings):
+            return f"expected a finding for backticked /home/ path in evidence file, got: {findings}"
+    return None
+
+
+def _case_backticked_credential_fails() -> str | None:
+    with tempfile.TemporaryDirectory() as t:
+        tmp = Path(t)
+        pkg = _scratch_repo(tmp)
+        (pkg / "evidence" / "raw" / "notes.md").write_text("Detected `AKIAI4DQ2EXAMPLEKEYS` in target.\n")
+        _commit_all(tmp, "add evidence file with backticked credential-like value")
+        findings = _scan_scratch(tmp, pkg)
+        if not any("AWS access key" in f[2] for f in findings):
+            return f"expected a finding for backticked AWS access key, got: {findings}"
+    return None
+
+
+def _case_clean_file_passes() -> str | None:
+    with tempfile.TemporaryDirectory() as t:
+        tmp = Path(t)
+        pkg = _scratch_repo(tmp)
+        (pkg / "evidence" / "raw" / "clean.md").write_text("This file has no issues.\n")
+        _commit_all(tmp, "add clean file")
+        findings = _scan_scratch(tmp, pkg)
+        if findings:
+            return f"clean file unexpectedly failed: {findings}"
+    return None
+
+
+def cmd_selftest():
+    cases = [
+        ("clean file passes", _case_clean_file_passes),
+        ("undecodable tracked file fails CI", _case_undecodable_file_fails),
+        ("backticked internal path in evidence file fails", _case_backticked_path_in_evidence_fails),
+        ("backticked credential-like value fails", _case_backticked_credential_fails),
+    ]
+    failed = 0
+    for name, fn in cases:
+        err = fn()
+        if err is None:
+            print(f"PASS: {name}")
+        else:
+            failed += 1
+            print(f"FAIL: {name}\n  {err}", file=sys.stderr)
+    if failed:
+        print(f"\n{failed}/{len(cases)} selftest case(s) FAILED.", file=sys.stderr)
+        sys.exit(1)
+    print(f"\nAll {len(cases)} selftest cases passed.")
+
+
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) == 2 and sys.argv[1] == "selftest":
+        cmd_selftest()
+    else:
+        main()

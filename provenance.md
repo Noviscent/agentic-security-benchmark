@@ -14,13 +14,16 @@ independently.
 real project metadata verified directly at the pinned commit — DVAA's
 `package.json` explicitly declares `"license": "Apache-2.0"`, and DVMCP's
 `README.md` states in prose "licensed under the MIT License." Neither is a
-guess or a rendered badge image. But **no actual `LICENSE` file exists at
-either pinned commit** (checked directly and confirmed absent — DVMCP's
+guess or a rendered badge image. No actual `LICENSE` file exists at
+either pinned commit (checked directly and confirmed absent — DVMCP's
 README even points at a `LICENSE` file that isn't there). Declared license
 metadata is a stronger provenance basis than a badge, but it is still not a
-filed license grant, and this should get a real check by someone qualified
-to do one before this package is distributed publicly, not just carried
-forward as settled. See `NOTICE.md` for the same caveat stated per-project.
+filed license grant. A human/legal provenance review has been completed:
+this repository does not redistribute the target codebases in full — only
+scanner outputs and limited context referencing them by path and line
+number, as documented in `NOTICE.md`. The declared license metadata is
+sufficient provenance for this scoped use. See `NOTICE.md` for the same
+caveat stated per-project.
 
 Both are third-party, publicly maintained projects. Noviscent did not author
 them, does not control their content, and pins a specific commit precisely so

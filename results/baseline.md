@@ -57,7 +57,7 @@ and `methodology/protocol-current.md` (the amended methodology matching publishe
 The single most actionable miss: the command-injection detection class
 caught **0 of 6** textbook command-injection sinks across the corpus (Python
 and TypeScript) — the kind of pattern a human reviewer flags on sight. This
-is a strong, reproducible signal independent of language.
+is a strong, repeatable signal across the tested Python and TypeScript cases.
 
 Other notable gaps (root cause classes only — see `limitations.md` and
 `SECURITY.md` for why exact rule logic isn't published):

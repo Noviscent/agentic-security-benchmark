@@ -29,6 +29,8 @@ Usage (run from this directory, i.e. the package root):
 HEAD:<path>`, not from disk -- a working-tree edit to either file, or to
 any hashed file, cannot change what `verify` reports unless it's committed.
 """
+from __future__ import annotations
+
 import hashlib
 import shutil
 import subprocess
@@ -49,29 +51,12 @@ CHECKSUM_FILE_REL = "evidence/hashes/bundle-checksum.txt"
 HASH_FILE = PACKAGE_ROOT / HASH_FILE_REL
 CHECKSUM_FILE = PACKAGE_ROOT / CHECKSUM_FILE_REL
 
-# Directories/files expected to be fully committed and in scope for the
-# bundle checksum. Anything under these paths that ISN'T in git (e.g.
-# still gitignored, or simply never added) is a bug, not a gap to
-# tolerate. The two hash-index files are deliberately excluded from
-# hashing themselves (see HASH_INDEX_FILES) but ARE tracked/verified paths
-# in their own right -- that distinction is what round 2's bug got wrong.
-IN_SCOPE_DIRS = [
-    "methodology",
-    "results",
-    "scripts",
-    ".github",
-    "evidence/manifests",
-    "evidence/raw",
-    "evidence/triage",
-    "evidence/validation-rerun",
-    "evidence/exploratory",
-]
-IN_SCOPE_FILES = [
-    "README.md", "LICENSE", "NOTICE.md", "provenance.md", "limitations.md",
-    "REPRODUCIBILITY.md", "SECURITY.md", "MAINTENANCE.md",
-    "evidence/validation-rerun-notes.md",
-    "evidence/redaction-manifest.json",
-]
+# Every committed file is in scope for hashing -- this is simpler and
+# less fragile than maintaining an allowlist every time a top-level
+# artifact (e.g. CITATION.cff, CONTRIBUTING.md) is added. The two
+# hash-index files are deliberately excluded from hashing themselves
+# (see HASH_INDEX_FILES) but ARE tracked/verified paths in their own
+# right.
 HASH_INDEX_FILES = {HASH_FILE_REL, CHECKSUM_FILE_REL}
 
 
@@ -103,15 +88,8 @@ def git_blob_text(repo_root: Path, package_rel: Path, rel_path: str) -> str:
 
 
 def expected_in_scope(tracked: list[str]) -> list[str]:
-    in_scope = []
-    for p in tracked:
-        if p in HASH_INDEX_FILES:
-            continue
-        top = p.split("/")[0]
-        top2 = "/".join(p.split("/")[:2])
-        if p in IN_SCOPE_FILES or top in IN_SCOPE_FILES or top2 in IN_SCOPE_DIRS or top in IN_SCOPE_DIRS:
-            in_scope.append(p)
-    return sorted(in_scope)
+    # Every committed file except the hash-index files themselves.
+    return sorted(p for p in tracked if p not in HASH_INDEX_FILES)
 
 
 def cmd_regenerate():

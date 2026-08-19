@@ -20,6 +20,7 @@ on:
 
 jobs:
   publication-checks:
+    name: Publication checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout (full history)

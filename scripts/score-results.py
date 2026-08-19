@@ -32,13 +32,18 @@ Metric definitions (unit-consistent, see methodology/protocol-current.md):
   so a single F1 over mixed units would not be a defensible standard metric.
 
 Usage:
-    score-results.py --sarif-dir evidence/raw/baseline --triage evidence/triage/triage-log-baseline-reconciled.csv --score
+    score-results.py --sarif-dir evidence/raw/baseline --triage evidence/triage/triage-log-baseline-reconciled.csv --ground-truth methodology/ground-truth.csv --score
 """
+from __future__ import annotations
+
 import argparse
 import csv
 import json
 import sys
 from pathlib import Path
+
+
+GROUND_TRUTH_DEFAULT = Path(__file__).resolve().parent.parent / "methodology" / "ground-truth.csv"
 
 
 def load_semgrep_findings(path: Path):
@@ -219,7 +224,73 @@ def check_reproducibility(run_paths, loader, key_fn, label):
     }
 
 
-def score_triage(triage_csv: Path):
+def load_ground_truth(gt_csv: Path):
+    """Load ground-truth.csv and return a dict mapping scenario_id to its
+    row. Validates that every row has a scenario_id and a static_scope value.
+    Raises ValueError on structural problems (missing columns, empty file)."""
+    scenarios = {}
+    with open(gt_csv, newline="") as f:
+        reader = csv.DictReader(f)
+        required_cols = {"scenario_id", "static_scope"}
+        missing_cols = required_cols - set(reader.fieldnames or [])
+        if missing_cols:
+            raise ValueError(
+                f"{gt_csv}: missing required column(s): {missing_cols}. "
+                f"Found columns: {reader.fieldnames}"
+            )
+        for i, row in enumerate(reader, start=2):
+            sid = row.get("scenario_id", "").strip()
+            if not sid:
+                raise ValueError(f"{gt_csv}: row {i} has empty scenario_id")
+            scope = row.get("static_scope", "").strip()
+            if not scope:
+                raise ValueError(f"{gt_csv}: row {i} ({sid}) has empty static_scope")
+            if sid in scenarios:
+                raise ValueError(f"{gt_csv}: duplicate scenario_id '{sid}' at row {i}")
+            scenarios[sid] = row
+    if not scenarios:
+        raise ValueError(f"{gt_csv}: no scenario rows found")
+    return scenarios
+
+
+def validate_provenance(triage_csv: Path, gt_scenarios: dict):
+    """Validate that the triage log is consistent with ground-truth.csv:
+    - Every scenario_id referenced in a tp_finding or scenario row must exist
+      in ground-truth.csv (reject unknown scenario IDs).
+    - Every in-scope scenario in ground-truth.csv must have at least one
+      triage row (TP or FN) referencing it (scenario coverage check).
+    Returns a list of failure strings; empty list means clean."""
+    failures = []
+    triaged_scenario_ids = set()
+
+    with open(triage_csv, newline="") as f:
+        for i, row in enumerate(csv.DictReader(f), start=2):
+            row_type = row.get("row_type", "").strip()
+            if row_type not in ("tp_finding", "scenario"):
+                continue
+            sid = row.get("scenario_id", "").strip()
+            if not sid:
+                failures.append(f"triage row {i}: {row_type} row has empty scenario_id")
+                continue
+            triaged_scenario_ids.add(sid)
+            if sid not in gt_scenarios:
+                failures.append(
+                    f"triage row {i}: scenario_id '{sid}' not found in ground-truth.csv "
+                    f"(unknown scenario -- provenance violation)"
+                )
+
+    in_scope_gt = {sid for sid, r in gt_scenarios.items() if r.get("static_scope", "").strip() == "in-scope"}
+    uncovered = in_scope_gt - triaged_scenario_ids
+    for sid in sorted(uncovered):
+        failures.append(
+            f"UNCOVERED IN-SCOPE SCENARIO: '{sid}' is marked in-scope in ground-truth.csv "
+            f"but has no tp_finding or scenario row in the triage log"
+        )
+
+    return failures
+
+
+def score_triage(triage_csv: Path, gt_scenarios: dict | None = None):
     """Compute metrics from triage-log.csv.
 
     The triage log has three row types:
@@ -227,7 +298,20 @@ def score_triage(triage_csv: Path):
       - scenario:  scenario-level row for FN or PARTIAL (no individual finding)
       - extra:     individual finding outside all scenario root causes
                    (outcome=FP, TRUE_ADDITIONAL, or NEEDS_REVIEW)
+
+    If gt_scenarios is provided, every scenario_id in tp_finding/scenario rows
+    is validated against the ground-truth scenario set, and every in-scope
+    ground-truth scenario must have at least one triage row.
     """
+    if gt_scenarios is not None:
+        provenance_failures = validate_provenance(triage_csv, gt_scenarios)
+        if provenance_failures:
+            print("\nERROR: provenance validation FAILED -- triage log is inconsistent "
+                  "with ground-truth.csv:", file=sys.stderr)
+            for f in provenance_failures:
+                print(f"  {f}", file=sys.stderr)
+            sys.exit(1)
+
     tp_findings = 0
     fn_scenarios = 0
     partial = 0
@@ -305,6 +389,9 @@ def main():
                          "and run1.gitleaks.json, run2.gitleaks.json, run3.gitleaks.json")
     ap.add_argument("--triage", type=Path,
                     help="triage-log.csv with 'row_type' and 'outcome' columns. Required for scoring.")
+    ap.add_argument("--ground-truth", type=Path, default=GROUND_TRUTH_DEFAULT,
+                    help="Path to ground-truth.csv (default: methodology/ground-truth.csv). "
+                         "Required when --score is used -- enforces scenario provenance.")
     ap.add_argument("--score", action="store_true",
                     help="Require scoring. If set and --triage is missing/absent, exit non-zero.")
     args = ap.parse_args()
@@ -352,8 +439,20 @@ def main():
             )
             sys.exit(1)
 
+        gt_scenarios = None
+        if args.ground_truth and args.ground_truth.exists():
+            try:
+                gt_scenarios = load_ground_truth(args.ground_truth)
+                print(f"\n=== Ground-truth provenance check ({len(gt_scenarios)} scenarios from {args.ground_truth}) ===")
+            except ValueError as e:
+                print(f"\nERROR: could not load ground-truth.csv: {e}", file=sys.stderr)
+                sys.exit(1)
+        elif args.score:
+            print(f"\nERROR: --score requested but ground-truth.csv not found at {args.ground_truth}", file=sys.stderr)
+            sys.exit(1)
+
         print("\n=== Scoring ===")
-        print(json.dumps(score_triage(args.triage), indent=2))
+        print(json.dumps(score_triage(args.triage, gt_scenarios), indent=2))
     elif args.score:
         print(f"\nERROR: --score requested but triage log not found at {args.triage}", file=sys.stderr)
         sys.exit(1)
