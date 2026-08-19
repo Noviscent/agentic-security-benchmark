@@ -1,0 +1,266 @@
+{
+  "_purpose": "Chain of custody for every file in this package whose content was transformed (redacted) before publication. This is the second entry in the chain: original private artifact -> known transform -> published redacted artifact -> public hash (evidence/hashes/file-hashes.txt). Without this file, the public hash only proves integrity AFTER redaction, not continuity from the original benchmark artifact -- see REPRODUCIBILITY.md and SECURITY.md.",
+  "redaction_pass_date_utc": "2026-08-18 (round 1: v0.1.1 username paths), 2026-08-19 (round 2: baseline scratch-dir paths, validation-rerun run2/run3 .stdout.log Windows OneDrive paths), 2026-08-19 (round 3: validation-rerun run1/run2/run3 .gitleaks.log Windows OneDrive paths -- missed by round 2), 2026-08-19 (round 4: validation-rerun run1 .json.stdout.log/.sarif.stdout.log Windows OneDrive paths -- missed by rounds 2 and 3 because these two files are UTF-16-encoded and the hygiene gate's git-blob reader initially only handled UTF-8, crashing instead of scanning them), 2026-08-18 (round 5: demo Stripe API key values in gitleaks JSON output redacted to pass GitHub Push Protection -- the keys are fictional demo fixtures embedded in DVAA/DVMCP, not real credentials, but GitHub's push protection blocks any sk_live_-formatted string regardless of validity)",
+  "redaction_pass_description": "Every file under evidence/ and methodology/ was checked for AWS-format credentials outside the known DVAA/DVMCP demo-fixture set, private key headers, noviscent.ca/@noviscent.* references, ClickUp URLs, AWS ARNs/account IDs, and absolute local filesystem paths, before staging. Round 1 found and fixed one class of leak, limited to the v0.1.1 raw evidence subset (a developer's local Linux path). Round 2's review found the sweep had NOT been run against the baseline raw evidence subset or evidence/validation-rerun/run2.json.stdout.log, run2.sarif.stdout.log, run3.json.stdout.log, and run3.sarif.stdout.log, all of which had their own distinct leaks: baseline evidence embedded an ephemeral agent session's UUID-scoped scratch-directory path (/tmp/claude-0/...), and those four validation-rerun logs embedded a developer's personal OneDrive folder path (C:\\\\Users\\\\<name>\\\\OneDrive\\\\Desktop\\\\...). Round 2's own closing claim that a full re-sweep confirmed no further occurrences remained was wrong: it re-swept only the specific files it had just fixed, not every file in evidence/validation-rerun/. Round 3 built an automated pattern-match gate, scripts/publication-hygiene-check.py, and immediately found the same OneDrive path still present, unredacted, in three .gitleaks.log files round 2 never checked -- those were fixed. Round 4: when this gate was run once more as part of final pre-commit verification (not part of any planned round), it crashed with a UnicodeDecodeError on two more files -- run1.json.stdout.log and run1.sarif.stdout.log -- which turned out to be UTF-16-encoded (a PowerShell stdout-redirect artifact) rather than UTF-8 like every other text file in this package. The crash meant these two files had never actually been scanned by anything, manual or automated, since staging began; when decoded and inspected directly they contained the exact same unredacted OneDrive path, 64 and 45 occurrences respectively -- identical counts to their already-fixed run2/run3 counterparts. Both are now fixed, and the gate itself was fixed to try UTF-16 as a fallback decoding instead of crashing, so it can no longer silently fail to scan a file of this shape. All 39 affected files (across all four rounds) are listed below, each verified against its true private-repository original before and after the transform. Round 5: GitHub Push Protection blocked the initial publication push because gitleaks JSON output contained demo Stripe API key values (sk_live_51NxEcT...) embedded in the DVAA/DVMCP deliberately vulnerable targets. These are fictional demo fixtures, not real credentials -- same category as the AWS AKIAIOSFODNN7EXAMPLE demo keys already disclosed in NOTICE.md. The actual key strings were replaced with sk_live_<REDACTED_DEMO_STRIPE_KEY> in all 6 gitleaks JSON files (baseline run1/run2/run3, v0.1.1 run1/run2/run3). The finding structure, rule IDs, file paths, line numbers, and all other metadata are preserved -- only the literal secret string value was replaced. score-results.py was re-run and confirmed the redaction does not change any published metric (the triage log keys findings by rule ID + path + line, not by secret value).",
+  "transformed_files": [
+    {
+      "file": "evidence/raw/v0.1.1/run1.gitleaks.json",
+      "source_private_sha256": "69cbbfd6049291b47daad7d0e41b667fd384f7e14a146276a4eb133f6134f26c",
+      "published_sha256": "edea0741654f85983c3324c4f1fcc1c66b9c953a6c663a735546ee24655b933f",
+      "transform": "Absolute local filesystem path (containing a developer's username, e.g. /home/<user>/code/...) replaced with the placeholder <TARGET_ROOT>/... No other content was altered. Additionally (round 5): demo Stripe API key values (sk_live_51NxEcT...) replaced with sk_live_<REDACTED_DEMO_STRIPE_KEY>. These are fictional demo fixtures from DVAA/DVMCP, not real credentials."
+    },
+    {
+      "file": "evidence/raw/v0.1.1/run1.json",
+      "source_private_sha256": "cba48df92d9e9e18c340e67a48ab2dad46a9e5afeab9e474df4b976d1bbffee8",
+      "published_sha256": "b393e820c47eda355cb9cf230dbad518287cfcd262789ed549e7f00addb08a2a",
+      "transform": "Absolute local filesystem path (containing a developer's username, e.g. /home/<user>/code/...) replaced with the placeholder <TARGET_ROOT>/... No other content was altered."
+    },
+    {
+      "file": "evidence/raw/v0.1.1/run1.json.stdout.log",
+      "source_private_sha256": "a44bdccd2d56d43660fdb66d923bd47ee0e2ea35dce0e1b7a2c99abd4c3fb633",
+      "published_sha256": "af022c6a8cff52c9a6ed9c11d4abac9250945eb33eff10363f5a9734303352db",
+      "transform": "Absolute local filesystem path (containing a developer's username, e.g. /home/<user>/code/...) replaced with the placeholder <TARGET_ROOT>/... No other content was altered."
+    },
+    {
+      "file": "evidence/raw/v0.1.1/run1.sarif.json",
+      "source_private_sha256": "a7f0ec77bbd6b16e3e629a85a0d4ed8e33564944caf210bc6f3af667072a9891",
+      "published_sha256": "b51e914ca59ecafe6155a4dfcece4e5c64ea73184e2bc8efa8c5a03a02a34d3f",
+      "transform": "Absolute local filesystem path (containing a developer's username, e.g. /home/<user>/code/...) replaced with the placeholder <TARGET_ROOT>/... No other content was altered."
+    },
+    {
+      "file": "evidence/raw/v0.1.1/run1.sarif.stdout.log",
+      "source_private_sha256": "a27f4daaa06dd7c4f667842e45b95f2730c1c3af8c0fed7ead2be3624ee0bc27",
+      "published_sha256": "c617974a230ec9a191ea1434063e2f65cf8927e2beb34f96368bb026ecd56c4f",
+      "transform": "Absolute local filesystem path (containing a developer's username, e.g. /home/<user>/code/...) replaced with the placeholder <TARGET_ROOT>/... No other content was altered."
+    },
+    {
+      "file": "evidence/raw/v0.1.1/run2.gitleaks.json",
+      "source_private_sha256": "6a82a7f42d001ea190035dd259804ec7e1d44d6a1cbd4286d437900991a8ed49",
+      "published_sha256": "7e0b3a4a7dac9ae8d6157e3a10f53b3f4520da20bd5ab0b9b3c2d15a6a5785ae",
+      "transform": "Absolute local filesystem path (containing a developer's username, e.g. /home/<user>/code/...) replaced with the placeholder <TARGET_ROOT>/... No other content was altered. Additionally (round 5): demo Stripe API key values (sk_live_51NxEcT...) replaced with sk_live_<REDACTED_DEMO_STRIPE_KEY>. These are fictional demo fixtures from DVAA/DVMCP, not real credentials."
+    },
+    {
+      "file": "evidence/raw/v0.1.1/run2.json",
+      "source_private_sha256": "63ab7f441deebca205700c0d8f08320ce565d173fc6990da4922dd87cec90e8a",
+      "published_sha256": "6067fb38e587dc8ea111a30946482fa12362492d1fe275b264d64c6a23839346",
+      "transform": "Absolute local filesystem path (containing a developer's username, e.g. /home/<user>/code/...) replaced with the placeholder <TARGET_ROOT>/... No other content was altered."
+    },
+    {
+      "file": "evidence/raw/v0.1.1/run2.json.stdout.log",
+      "source_private_sha256": "1d597ecd4c538083a327bddbce780a7e6a072ff31df602dfd3cb6495a89a791d",
+      "published_sha256": "18dad34067b38750f86a138cdc7c29030848a9562190baac41602ebdc22e247a",
+      "transform": "Absolute local filesystem path (containing a developer's username, e.g. /home/<user>/code/...) replaced with the placeholder <TARGET_ROOT>/... No other content was altered."
+    },
+    {
+      "file": "evidence/raw/v0.1.1/run2.sarif.json",
+      "source_private_sha256": "a7f0ec77bbd6b16e3e629a85a0d4ed8e33564944caf210bc6f3af667072a9891",
+      "published_sha256": "b51e914ca59ecafe6155a4dfcece4e5c64ea73184e2bc8efa8c5a03a02a34d3f",
+      "transform": "Absolute local filesystem path (containing a developer's username, e.g. /home/<user>/code/...) replaced with the placeholder <TARGET_ROOT>/... No other content was altered."
+    },
+    {
+      "file": "evidence/raw/v0.1.1/run2.sarif.stdout.log",
+      "source_private_sha256": "a27f4daaa06dd7c4f667842e45b95f2730c1c3af8c0fed7ead2be3624ee0bc27",
+      "published_sha256": "c617974a230ec9a191ea1434063e2f65cf8927e2beb34f96368bb026ecd56c4f",
+      "transform": "Absolute local filesystem path (containing a developer's username, e.g. /home/<user>/code/...) replaced with the placeholder <TARGET_ROOT>/... No other content was altered."
+    },
+    {
+      "file": "evidence/raw/v0.1.1/run3.gitleaks.json",
+      "source_private_sha256": "aa58de521a7a8b273e50fba7da1c7b3725b28d6c44d989087193858a08df4dcd",
+      "published_sha256": "5dc25f37d945bc0850f0c838615af8bed7de2953b54466b41d2a894cc77ca406",
+      "transform": "Absolute local filesystem path (containing a developer's username, e.g. /home/<user>/code/...) replaced with the placeholder <TARGET_ROOT>/... No other content was altered. Additionally (round 5): demo Stripe API key values (sk_live_51NxEcT...) replaced with sk_live_<REDACTED_DEMO_STRIPE_KEY>. These are fictional demo fixtures from DVAA/DVMCP, not real credentials."
+    },
+    {
+      "file": "evidence/raw/v0.1.1/run3.json",
+      "source_private_sha256": "f77d3f9f1862b39bf2f1eaf466be174a30d6f41f2bd8e5aa9e53ad9069f34495",
+      "published_sha256": "59d58c80bb92de685b81f68fa24499b847ee905a375ef01a4afadb67795160b5",
+      "transform": "Absolute local filesystem path (containing a developer's username, e.g. /home/<user>/code/...) replaced with the placeholder <TARGET_ROOT>/... No other content was altered."
+    },
+    {
+      "file": "evidence/raw/v0.1.1/run3.json.stdout.log",
+      "source_private_sha256": "9742dc490d7620570b9fc0521c2a315b02fae2209f98d6cc502c1eb1157f1014",
+      "published_sha256": "86f7fba3d231319131d90047cc712d6fd206ba49e5744102138a318e269d9d05",
+      "transform": "Absolute local filesystem path (containing a developer's username, e.g. /home/<user>/code/...) replaced with the placeholder <TARGET_ROOT>/... No other content was altered."
+    },
+    {
+      "file": "evidence/raw/v0.1.1/run3.sarif.json",
+      "source_private_sha256": "a7f0ec77bbd6b16e3e629a85a0d4ed8e33564944caf210bc6f3af667072a9891",
+      "published_sha256": "b51e914ca59ecafe6155a4dfcece4e5c64ea73184e2bc8efa8c5a03a02a34d3f",
+      "transform": "Absolute local filesystem path (containing a developer's username, e.g. /home/<user>/code/...) replaced with the placeholder <TARGET_ROOT>/... No other content was altered."
+    },
+    {
+      "file": "evidence/raw/v0.1.1/run3.sarif.stdout.log",
+      "source_private_sha256": "a27f4daaa06dd7c4f667842e45b95f2730c1c3af8c0fed7ead2be3624ee0bc27",
+      "published_sha256": "c617974a230ec9a191ea1434063e2f65cf8927e2beb34f96368bb026ecd56c4f",
+      "transform": "Absolute local filesystem path (containing a developer's username, e.g. /home/<user>/code/...) replaced with the placeholder <TARGET_ROOT>/... No other content was altered."
+    },
+    {
+      "file": "evidence/raw/baseline/run1.gitleaks.json",
+      "source_private_sha256": "590f1ef22ad74ea5e5e2d03b8e7b83859549fca492a55a33ee30e362b3aceef4",
+      "published_sha256": "3b2186b71d9e41a07e7fdda3b3955ee509b38ae69cd4ac1746fe50e5072ce58e",
+      "transform": "Absolute local scratch-directory path (a session-scoped temp working directory containing a UUID) replaced with the placeholder <TARGET_ROOT>/. No other content was altered. Additionally (round 5): demo Stripe API key values (sk_live_51NxEcT...) replaced with sk_live_<REDACTED_DEMO_STRIPE_KEY>. These are fictional demo fixtures from DVAA/DVMCP, not real credentials.",
+      "occurrences_replaced": 72
+    },
+    {
+      "file": "evidence/raw/baseline/run1.json",
+      "source_private_sha256": "e3d1e3c89b34f01d018bf3e2b834cf4fccfa3f2d670818db188c3ac049ce9b0e",
+      "published_sha256": "593af649a01359dfcec8e32bd114d4513b0fa42364ab0971356c1c772795723e",
+      "transform": "Absolute local scratch-directory path (a session-scoped temp working directory containing a UUID) replaced with the placeholder <TARGET_ROOT>/. No other content was altered.",
+      "occurrences_replaced": 64
+    },
+    {
+      "file": "evidence/raw/baseline/run1.json.stdout.log",
+      "source_private_sha256": "6f8374629b64a3d6d2cf16983aba5deffb0a34e2cf9eb44938c28265c3013495",
+      "published_sha256": "50cd2bd7e708ddd42da5875298a4d8e0f4ecd1be65e9fcd2d0ff8faa55366596",
+      "transform": "Absolute local scratch-directory path (a session-scoped temp working directory containing a UUID) replaced with the placeholder <TARGET_ROOT>/. No other content was altered.",
+      "occurrences_replaced": 64
+    },
+    {
+      "file": "evidence/raw/baseline/run1.sarif.json",
+      "source_private_sha256": "a6479e5c34ebf1cac00ea73eb97379b35d4a0d989a556d7fed8925fafa8206dc",
+      "published_sha256": "2c4c88f9f3bd17a6b0e4a635a506d946a91062194751b09df2820f57b5f3eefc",
+      "transform": "Absolute local scratch-directory path (a session-scoped temp working directory containing a UUID) replaced with the placeholder <TARGET_ROOT>/. No other content was altered.",
+      "occurrences_replaced": 45
+    },
+    {
+      "file": "evidence/raw/baseline/run1.sarif.stdout.log",
+      "source_private_sha256": "e924ea9a6c0c113e9208c544e31d6711a3bbfe630743acc498db66fcd078a760",
+      "published_sha256": "49a662048e46b211d15dc752bd5d20bbc8a98873b9e44bfcbcca36fb56fc09c8",
+      "transform": "Absolute local scratch-directory path (a session-scoped temp working directory containing a UUID) replaced with the placeholder <TARGET_ROOT>/. No other content was altered.",
+      "occurrences_replaced": 45
+    },
+    {
+      "file": "evidence/raw/baseline/run2.gitleaks.json",
+      "source_private_sha256": "c82bd3fc0ae875d151c6301f8373a9e3676464a389bf556a5b24f414fb6d553b",
+      "published_sha256": "1a42df38724e02707098d95565743584164ac50b7d83bae6b5e45aa23abf2257",
+      "transform": "Absolute local scratch-directory path (a session-scoped temp working directory containing a UUID) replaced with the placeholder <TARGET_ROOT>/. No other content was altered. Additionally (round 5): demo Stripe API key values (sk_live_51NxEcT...) replaced with sk_live_<REDACTED_DEMO_STRIPE_KEY>. These are fictional demo fixtures from DVAA/DVMCP, not real credentials.",
+      "occurrences_replaced": 72
+    },
+    {
+      "file": "evidence/raw/baseline/run2.json",
+      "source_private_sha256": "379922650494159da38f71b8222164d79de28dd4e830aa94e147dfe8360cd02d",
+      "published_sha256": "4cef992a4e69090743e1877aa45661bf53e0d4e525aa74e4c9ca08691698f33a",
+      "transform": "Absolute local scratch-directory path (a session-scoped temp working directory containing a UUID) replaced with the placeholder <TARGET_ROOT>/. No other content was altered.",
+      "occurrences_replaced": 64
+    },
+    {
+      "file": "evidence/raw/baseline/run2.json.stdout.log",
+      "source_private_sha256": "4672b8ce95f66204b1480a7d2d907873be4864f92eb822128f6486ee48a9a2c4",
+      "published_sha256": "964b821ee543a7c29c50f89c47662bf96d1d6f8ba5cafe9bfa6737f3eb2aded6",
+      "transform": "Absolute local scratch-directory path (a session-scoped temp working directory containing a UUID) replaced with the placeholder <TARGET_ROOT>/. No other content was altered.",
+      "occurrences_replaced": 64
+    },
+    {
+      "file": "evidence/raw/baseline/run2.sarif.json",
+      "source_private_sha256": "a6479e5c34ebf1cac00ea73eb97379b35d4a0d989a556d7fed8925fafa8206dc",
+      "published_sha256": "2c4c88f9f3bd17a6b0e4a635a506d946a91062194751b09df2820f57b5f3eefc",
+      "transform": "Absolute local scratch-directory path (a session-scoped temp working directory containing a UUID) replaced with the placeholder <TARGET_ROOT>/. No other content was altered.",
+      "occurrences_replaced": 45
+    },
+    {
+      "file": "evidence/raw/baseline/run2.sarif.stdout.log",
+      "source_private_sha256": "e924ea9a6c0c113e9208c544e31d6711a3bbfe630743acc498db66fcd078a760",
+      "published_sha256": "49a662048e46b211d15dc752bd5d20bbc8a98873b9e44bfcbcca36fb56fc09c8",
+      "transform": "Absolute local scratch-directory path (a session-scoped temp working directory containing a UUID) replaced with the placeholder <TARGET_ROOT>/. No other content was altered.",
+      "occurrences_replaced": 45
+    },
+    {
+      "file": "evidence/raw/baseline/run3.gitleaks.json",
+      "source_private_sha256": "817727007a0ccca99b97e8378f23997a6d32dfd237690a8749e88bfa8e43530d",
+      "published_sha256": "982d7f8084091f88f820a82ea4c82d672fec1c0fd8b8dbb7f660dfb7c02d5364",
+      "transform": "Absolute local scratch-directory path (a session-scoped temp working directory containing a UUID) replaced with the placeholder <TARGET_ROOT>/. No other content was altered. Additionally (round 5): demo Stripe API key values (sk_live_51NxEcT...) replaced with sk_live_<REDACTED_DEMO_STRIPE_KEY>. These are fictional demo fixtures from DVAA/DVMCP, not real credentials.",
+      "occurrences_replaced": 72
+    },
+    {
+      "file": "evidence/raw/baseline/run3.json",
+      "source_private_sha256": "4711d4f2e667efa673b59607d861d7caacb20b27f40896be7aa4a9495237df17",
+      "published_sha256": "a7880b8db6ee11b4c7a1963d77bfa38b72a69efd3c9f1d52efea4a562ba31f5f",
+      "transform": "Absolute local scratch-directory path (a session-scoped temp working directory containing a UUID) replaced with the placeholder <TARGET_ROOT>/. No other content was altered.",
+      "occurrences_replaced": 64
+    },
+    {
+      "file": "evidence/raw/baseline/run3.json.stdout.log",
+      "source_private_sha256": "ef3fddb356ab2aa55a896d76a7ae065d72bd4b236464521a62e90a804e0d2aa2",
+      "published_sha256": "3ca665aa230abf1c6972463058aef297dc00f459e9d506a44a934c5926ea5198",
+      "transform": "Absolute local scratch-directory path (a session-scoped temp working directory containing a UUID) replaced with the placeholder <TARGET_ROOT>/. No other content was altered.",
+      "occurrences_replaced": 64
+    },
+    {
+      "file": "evidence/raw/baseline/run3.sarif.json",
+      "source_private_sha256": "a6479e5c34ebf1cac00ea73eb97379b35d4a0d989a556d7fed8925fafa8206dc",
+      "published_sha256": "2c4c88f9f3bd17a6b0e4a635a506d946a91062194751b09df2820f57b5f3eefc",
+      "transform": "Absolute local scratch-directory path (a session-scoped temp working directory containing a UUID) replaced with the placeholder <TARGET_ROOT>/. No other content was altered.",
+      "occurrences_replaced": 45
+    },
+    {
+      "file": "evidence/raw/baseline/run3.sarif.stdout.log",
+      "source_private_sha256": "e924ea9a6c0c113e9208c544e31d6711a3bbfe630743acc498db66fcd078a760",
+      "published_sha256": "49a662048e46b211d15dc752bd5d20bbc8a98873b9e44bfcbcca36fb56fc09c8",
+      "transform": "Absolute local scratch-directory path (a session-scoped temp working directory containing a UUID) replaced with the placeholder <TARGET_ROOT>/. No other content was altered.",
+      "occurrences_replaced": 45
+    },
+    {
+      "file": "evidence/validation-rerun/run2.json.stdout.log",
+      "source_private_sha256": "8ff7a2ff147d8a66d75456a16f062e70594c1dd31ff43206b71a9fb8df5292f8",
+      "published_sha256": "53caff20719ac5e9ab92378e94d8f2d15460921144ff770f62ba7ccaba6cf216",
+      "transform": "Absolute local Windows filesystem path (containing a developer's username and personal OneDrive folder structure) replaced with the placeholder <TARGET_ROOT>\\\\. No other content was altered.",
+      "occurrences_replaced": 64
+    },
+    {
+      "file": "evidence/validation-rerun/run2.sarif.stdout.log",
+      "source_private_sha256": "71fd84c5da4fe1b7f54c8252108cc30ed22bdca713775994a88536256ef6ff25",
+      "published_sha256": "cd57cde58e159e3bb851d1f5910edc83fbf0577a565684893d3df5b7d5c63c13",
+      "transform": "Absolute local Windows filesystem path (containing a developer's username and personal OneDrive folder structure) replaced with the placeholder <TARGET_ROOT>\\\\. No other content was altered.",
+      "occurrences_replaced": 45
+    },
+    {
+      "file": "evidence/validation-rerun/run3.json.stdout.log",
+      "source_private_sha256": "50b594c88809d216aebd5903cabe4b0ce39cdce710b33d191edf47ccf6e9b2bd",
+      "published_sha256": "465124470f865aaa4b673324374a5128edd8e38bfd9bedce491fbae043c959b8",
+      "transform": "Absolute local Windows filesystem path (containing a developer's username and personal OneDrive folder structure) replaced with the placeholder <TARGET_ROOT>\\\\. No other content was altered.",
+      "occurrences_replaced": 64
+    },
+    {
+      "file": "evidence/validation-rerun/run3.sarif.stdout.log",
+      "source_private_sha256": "71fd84c5da4fe1b7f54c8252108cc30ed22bdca713775994a88536256ef6ff25",
+      "published_sha256": "cd57cde58e159e3bb851d1f5910edc83fbf0577a565684893d3df5b7d5c63c13",
+      "transform": "Absolute local Windows filesystem path (containing a developer's username and personal OneDrive folder structure) replaced with the placeholder <TARGET_ROOT>\\\\. No other content was altered.",
+      "occurrences_replaced": 45
+    },
+    {
+      "file": "evidence/validation-rerun/run1.gitleaks.log",
+      "source_private_sha256": "3ea8d305163b06ba6af3c0642d61198c7defec0b9b98a4c4c0d7841c6956d3aa",
+      "published_sha256": "78878fe52e1d2d4ab9b375925b12132514013c56f8c0dda32a0885bf983a440d",
+      "transform": "Absolute local Windows filesystem path (containing a developer's username and personal OneDrive folder structure) replaced with the placeholder <TARGET_ROOT>\\\\. No other content was altered.",
+      "occurrences_replaced": 18
+    },
+    {
+      "file": "evidence/validation-rerun/run2.gitleaks.log",
+      "source_private_sha256": "a5fd7341c2209177f418752a08b9864b9b5f2b36b45e656e0ca67e8faf23cad4",
+      "published_sha256": "e39399ac7e4dc920e5519d5ddbc4aeed84df9b5bdedd632fc8c12c826becf73c",
+      "transform": "Absolute local Windows filesystem path (containing a developer's username and personal OneDrive folder structure) replaced with the placeholder <TARGET_ROOT>\\\\. No other content was altered.",
+      "occurrences_replaced": 18
+    },
+    {
+      "file": "evidence/validation-rerun/run3.gitleaks.log",
+      "source_private_sha256": "487e89b02ee08f2dd79031f529bca08ab93fae5702f4bafa26f2fb9a160b8033",
+      "published_sha256": "f033986840c605e8544f868fb725dc03f08adc4334776fe3f56a20d0d9442526",
+      "transform": "Absolute local Windows filesystem path (containing a developer's username and personal OneDrive folder structure) replaced with the placeholder <TARGET_ROOT>\\\\. No other content was altered.",
+      "occurrences_replaced": 18
+    },
+    {
+      "file": "evidence/validation-rerun/run1.json.stdout.log",
+      "source_private_sha256": "efcf9d17559ef95febc665277b5ae4616494a4b837775db8ffcca92e42ccc03b",
+      "published_sha256": "ab90d883616812f558b28c374cfe3ce93868a349840803c91378b41ac3bf1da5",
+      "transform": "Absolute local Windows filesystem path (containing a developer's username and personal OneDrive folder structure) replaced with the placeholder <TARGET_ROOT>\\\\. No other content was altered. This file is UTF-16-encoded (a PowerShell stdout-redirect artifact); the transform was applied on the decoded text and the file was re-encoded as UTF-16 to preserve its original encoding exactly.",
+      "occurrences_replaced": 64
+    },
+    {
+      "file": "evidence/validation-rerun/run1.sarif.stdout.log",
+      "source_private_sha256": "e7eca260431c1cbd9a78820d82ea513342aa70cb4f269163c09e00a6066bbba7",
+      "published_sha256": "c917bb87a26aadfe978aea66c769f201d45c5dd0c694e898e09eda74e38a8651",
+      "transform": "Absolute local Windows filesystem path (containing a developer's username and personal OneDrive folder structure) replaced with the placeholder <TARGET_ROOT>\\\\. No other content was altered. This file is UTF-16-encoded (a PowerShell stdout-redirect artifact); the transform was applied on the decoded text and the file was re-encoded as UTF-16 to preserve its original encoding exactly.",
+      "occurrences_replaced": 45
+    }
+  ],
+  "untransformed_files_note": "Every other file under evidence/raw/ and evidence/validation-rerun/ (the files not listed below) is an exact, byte-for-byte copy of the corresponding file in Noviscent's private benchmark evidence -- no transform was applied. scripts/publication-hygiene-check.py -- fixed in round 4 to try UTF-16 decoding as a fallback so it can no longer silently skip a file it can't decode as UTF-8 -- was run against every tracked file in this package and found zero remaining occurrences of /home/, /Users/, C:\\\\Users\\\\, /tmp/claude-, scratchpad, an internal app./dev.noviscent.ca domain reference, a ClickUp URL, a private key header, or an AWS account ID/access key outside the two disclosed DVAA/DVMCP demo fixtures. Re-run that script (not just a manual grep) before any future evidence regeneration lands in this package -- round 2's own re-sweep claim, and round 3's gate silently crash-skipping two files instead of failing loudly, are both concrete examples of why an assumption of completeness needs to be checked, not trusted. Round 5 added demo Stripe key redaction to the 6 gitleaks JSON files already listed above (some were already transformed by earlier rounds for path redaction)."
+}

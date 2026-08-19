@@ -1,0 +1,27 @@
+               
+               
+┌─────────────┐
+│ Scan Status │
+└─────────────┘
+  Scanning 25 files with 100 Code rules:
+                                                                                                                        
+  Language      Rules   Files          Origin   Rules                                                                   
+ ─────────────────────────────        ────────────────                                                                  
+  python           64      11          Custom     100                                                                   
+  js               40       3                                                                                           
+  bash              2       2                                                                                           
+  <multilang>       1       2                                                                                           
+  ts               40       1                                                                                           
+                                                                                                                        
+                
+                
+┌──────────────┐
+│ Scan Summary │
+└──────────────┘
+✅ Scan completed successfully.
+ • Findings: 45 (45 blocking)
+ • Rules run: 100
+ • Targets scanned: 19
+ • Parsed lines: ~100.0%
+ • No ignore information available
+Ran 100 rules on 19 files: 45 findings.

@@ -1,0 +1,36 @@
+[90m12:53PM[0m [32mINF[0m scan completed in 10.1ms
+[90m12:53PM[0m [32mINF[0m no leaks found
+[90m12:53PM[0m [32mINF[0m scan completed in 8.76ms
+[90m12:53PM[0m [31mWRN[0m leaks found: 3
+[90m12:53PM[0m [32mINF[0m scan completed in 7.62ms
+[90m12:53PM[0m [32mINF[0m no leaks found
+[90m12:53PM[0m [32mINF[0m scan completed in 7.34ms
+[90m12:53PM[0m [32mINF[0m no leaks found
+[90m12:53PM[0m [32mINF[0m scan completed in 9.17ms
+[90m12:53PM[0m [32mINF[0m no leaks found
+[90m12:53PM[0m [32mINF[0m scan completed in 15.3ms
+[90m12:53PM[0m [31mWRN[0m leaks found: 1
+[90m12:53PM[0m [32mINF[0m scan completed in 17.6ms
+[90m12:53PM[0m [32mINF[0m no leaks found
+[90m12:53PM[0m [32mINF[0m scan completed in 10.4ms
+[90m12:53PM[0m [32mINF[0m no leaks found
+[90m12:53PM[0m [32mINF[0m scan completed in 10.5ms
+[90m12:53PM[0m [31mWRN[0m leaks found: 1
+[90m12:53PM[0m [32mINF[0m scan completed in 12.1ms
+[90m12:53PM[0m [32mINF[0m no leaks found
+[90m12:53PM[0m [32mINF[0m scan completed in 17.9ms
+[90m12:53PM[0m [31mWRN[0m leaks found: 2
+[90m12:53PM[0m [32mINF[0m scan completed in 22.8ms
+[90m12:53PM[0m [31mWRN[0m leaks found: 1
+[90m12:53PM[0m [32mINF[0m scan completed in 33.1ms
+[90m12:53PM[0m [31mWRN[0m leaks found: 6
+[90m12:53PM[0m [32mINF[0m scan completed in 15.7ms
+[90m12:53PM[0m [31mWRN[0m leaks found: 2
+[90m12:53PM[0m [32mINF[0m scan completed in 18.5ms
+[90m12:53PM[0m [31mWRN[0m leaks found: 8
+[90m12:53PM[0m [32mINF[0m scan completed in 13.5ms
+[90m12:53PM[0m [31mWRN[0m leaks found: 3
+[90m12:53PM[0m [32mINF[0m scan completed in 18.5ms
+[90m12:53PM[0m [32mINF[0m no leaks found
+[90m12:53PM[0m [32mINF[0m scan completed in 29.6ms
+[90m12:53PM[0m [31mWRN[0m leaks found: 9

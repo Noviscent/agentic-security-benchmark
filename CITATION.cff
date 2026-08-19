@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this benchmark in your research, please cite it as below."
+title: "Noviscent Agentic AI Security Benchmark"
+type: software
+version: "0.1.1"
+date-released: "2026-08-18"
+url: "https://github.com/Noviscent/agentic-security-benchmark"
+preferred-citation:
+  type: software
+  title: "Noviscent Agentic AI Security Benchmark"
+  authors:
+    - name: "Noviscent Inc."
+      entity-type: organization
+  date-released: "2026-08-18"
+  url: "https://github.com/Noviscent/agentic-security-benchmark"

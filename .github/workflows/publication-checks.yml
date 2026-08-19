@@ -1,0 +1,45 @@
+# Publication checks for the Noviscent Agentic AI Security Benchmark
+# evidence package.
+#
+# Runs four independent checks, all read-only against the repository's own
+# committed content -- none of them re-run any scanner, and none of them
+# require access to the private Noviscent detection rule source:
+#   1. syntax-check.py       -- every tracked .json/.csv parses
+#   2. verify-integrity.py   -- every declared hash matches committed git bytes
+#   3. golden-metrics-check.py -- score-results.py reproduces the published numbers
+#   4. publication-hygiene-check.py -- no unresolved placeholder/leak pattern
+
+name: Publication checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  publication-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Syntax check (JSON/CSV)
+        run: python3 scripts/syntax-check.py
+
+      - name: Evidence integrity (hashes vs. committed git bytes)
+        run: python3 scripts/verify-integrity.py verify
+
+      - name: Golden-metrics check (baseline + v0.1.1 reproduce published numbers)
+        run: python3 scripts/golden-metrics-check.py
+
+      - name: Publication hygiene gate (placeholders, internal paths, credentials)
+        run: python3 scripts/publication-hygiene-check.py

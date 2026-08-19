@@ -1,0 +1,68 @@
+{
+  "_schema_note": "This is a REDACTED PUBLIC manifest. It intentionally omits internal authorship metadata (agent names, ticket IDs, private branch names) and reports rule changes at capability level, not exact pattern/matching mechanics. See ../../SECURITY.md for why. The full internal manifest (with exact detection-logic change notes, e.g. specific metavariable constraints and sink-binding structure) is not published.",
+  "benchmark_id": "noviscent-agentic-benchmark-v0.1.1-remediation",
+  "created_at_utc": "2026-08-17T01:18:07Z",
+  "regenerated_at_utc": "2026-08-17T16:54:21Z",
+  "relationship_to_baseline": "This is a REMEDIATION re-run against the exact same frozen ground-truth.csv and the exact same pinned DVAA/DVMCP targets as the v0.1 baseline (see benchmark-manifest.json). Only the Noviscent rule commit changed. The v0.1 baseline evidence (evidence/raw/baseline/, evidence/triage/triage-log-baseline-reconciled.csv) is NOT modified or overwritten by this file or by evidence/raw/v0.1.1/ -- both are preserved side by side. This is a same-corpus regression/remediation result, not independent validation -- see REPRODUCIBILITY.md and results/remediation-v0.1.1.md.",
+  "noviscent_ai_sast": {
+    "remediation_commit_sha": "d13ec4e328f46211ec14c98f3459675320538202",
+    "baseline_commit_sha": "e9f22658714a494ab8a50196b9ddf2a0d079e1ab",
+    "note": "Two-commit provenance model: remediation_commit_sha is the rules-under-test commit the benchmark was run against. The manifest and evidence files are captured in a later commit. This regeneration reflects rule-pack content changes only; no changes were made to ground-truth.csv, the scoring methodology, or the pinned DVAA/DVMCP target commits."
+  },
+  "scanner": {
+    "engine": "semgrep",
+    "version": "1.173.0",
+    "python_version": "3.11.15",
+    "install_method": "pip install semgrep, isolated venv (unchanged from baseline)"
+  },
+  "secondary_scanner": {
+    "engine": "gitleaks",
+    "version": "8.16.0",
+    "install_method": "GitHub release binary v8.16.0 linux_x64",
+    "config_sha256": "48905b1b3e20f37e7b52a3cfc67c8f78568b2b0802678d9c637f030e3e34da8d"
+  },
+  "packs_evaluated": [
+    { "packId": "agent-safety",    "version": "1.3.0", "content_sha256": "6e3d52fb352a57a705a0ef30685832aa29a56703c35b9c154097cd26919ba435", "changed_from_baseline": true,  "baseline_version": "1.2.0" },
+    { "packId": "tool-safety",     "version": "1.2.0", "content_sha256": "2416e21124a486105b61235d2f9162c0b1f460f440d82a631e49b944ec98ce30", "changed_from_baseline": true,  "baseline_version": "1.1.0" },
+    { "packId": "data-exfil",      "version": "1.1.0", "content_sha256": "4824bb2b3c8ef32dee0f4d588b1e4d3eb3c65e0491089e617fa9a96a6022ebfa", "changed_from_baseline": false, "baseline_version": "1.1.0" },
+    { "packId": "secrets-privacy", "version": "1.0.0", "content_sha256": "8e4f766123ab6565f0594c8241b54df9f05fa55de458db726611ff3f81f32fd2", "changed_from_baseline": false, "baseline_version": "1.0.0" },
+    { "packId": "supply-chain",    "version": "1.2.0", "content_sha256": "12bf63b15a02f2ed378b5cc040d3c1ca37345361ea45f3c35112d1a631b034e2", "changed_from_baseline": true,  "baseline_version": "1.1.0" },
+    { "packId": "prompt-rag",      "version": "1.3.0", "content_sha256": "8a121e20773c755d3a1696f019a9a50b531eb1214505a9ffe132354c52b6da7c", "changed_from_baseline": true,  "baseline_version": "1.2.0" }
+  ],
+  "content_sha256_method": "sha256 of the concatenation of every *.yaml semgrep rule file and pack.json in the pack directory, in sorted path order (identical method to the baseline manifest).",
+  "rule_changes_summary": [
+    "Command-injection detection (tool-safety pack): coverage broadened across previously-missed execution shapes -- was scoped too narrowly to specific framework call patterns.",
+    "Unsandboxed code-execution detection (agent-safety pack): extended to recognize additional tool-registration decorator shapes and a temp-file-then-execute pattern that was previously missed.",
+    "Agent-delegation privilege-escalation detection (agent-safety pack): extended to the language/transport actually exercised by the corpus (was single-framework, single-language).",
+    "Path-traversal detection (tool-safety pack): input-source narrowness fixed (same root cause as the command-injection fix); sanitizer-recognition logic tightened after review found it was accepting insufficiently-validated patterns as safe.",
+    "Prompt-injection heuristic (prompt-rag pack): narrowed to reduce false positives -- was matching generic string construction unrelated to prompt composition.",
+    "New rule (agent-safety pack): detects MCP/LangChain tool docstrings/descriptions containing embedded imperative instructions directed at the LLM (\"tool poisoning\") -- no prior coverage existed for this class.",
+    "New rule (supply-chain pack): detects unverified piped-install patterns (curl/wget into a shell) -- prior coverage was limited to a narrower set of install patterns.",
+    "Scoring/harness changes (not detection-rule changes): score-results.py now uses multiplicity-aware (not set-based) reproducibility comparison with a hard gate on any run-to-run mismatch; the pack test harness now treats positive-fixture failures as blocking for modified rules; a triage-vs-raw-output reconciliation check was added that aborts scoring on any mismatch."
+  ],
+  "targets": [
+    {
+      "target_id": "DVAA",
+      "name": "Damn Vulnerable AI Agent",
+      "repo_url": "https://github.com/opena2a-org/damn-vulnerable-ai-agent",
+      "commit_sha": "c3dd6c738cd5f225084867ff3d61b048515c4e3a",
+      "commit_date": "2026-08-11T00:13:01-06:00",
+      "note": "IDENTICAL to baseline manifest -- unchanged."
+    },
+    {
+      "target_id": "DVMCP",
+      "name": "Damn Vulnerable MCP Server",
+      "repo_url": "https://github.com/harishsg993010/damn-vulnerable-MCP-server",
+      "commit_sha": "79734c19f5104cd11486c90926d245560f53befa",
+      "commit_date": "2025-12-07T18:14:14-06:00",
+      "note": "IDENTICAL to baseline manifest -- unchanged."
+    }
+  ],
+  "scanned_paths": "IDENTICAL to the baseline manifest's scanned_paths -- see evidence/manifests/benchmark-manifest.json.",
+  "ground_truth": {
+    "file": "methodology/ground-truth.csv",
+    "sha256": "7eed497dc9c3cf8c18765a9a6149c8a773f5698ce3b8085ba58e618aa8af7a38",
+    "statement": "Completely unchanged from the frozen v0.1 baseline (identical sha256). This re-run scores the same 18 pre-declared scenarios (12 in-scope, 6 partial) against improved rules, not a redefinition of what counts as a hit."
+  },
+  "remediation_commit_sha": "d13ec4e328f46211ec14c98f3459675320538202"
+}

@@ -1,0 +1,5 @@
+status=VALID
+reason=semgrep=62 findings; gitleaks=36 findings; both scanners completed and outputs validated
+timestamp_utc=2026-08-17T16:54:21Z
+semgrep_version=1.173.0
+gitleaks_version=8.16.0

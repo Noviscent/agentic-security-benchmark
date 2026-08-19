@@ -1,0 +1,71 @@
+[<TARGET_ROOT>\damn-vulnerable-ai-agent\scenarios/pickle-deserialization/vulnerable] rc=0
+[90m8:15PM[0m [32mINF[0m [1mscanned ~1530 bytes (1.53 KB) in 384ms[0m
+[90m8:15PM[0m [32mINF[0m [1mno leaks found[0m
+
+[<TARGET_ROOT>\damn-vulnerable-ai-agent\scenarios/webcred-api-key/vulnerable] rc=1
+[90m8:16PM[0m [32mINF[0m [1mscanned ~771 bytes (771 bytes) in 215ms[0m
+[90m8:16PM[0m [33mWRN[0m [1mleaks found: 3[0m
+
+[<TARGET_ROOT>\damn-vulnerable-ai-agent\scenarios/codeinj-exec-template/vulnerable] rc=0
+[90m8:16PM[0m [32mINF[0m [1mscanned ~502 bytes (502 bytes) in 224ms[0m
+[90m8:16PM[0m [32mINF[0m [1mno leaks found[0m
+
+[<TARGET_ROOT>\damn-vulnerable-ai-agent\scenarios/install-curl-pipe-sh/vulnerable] rc=0
+[90m8:16PM[0m [32mINF[0m [1mscanned ~246 bytes (246 bytes) in 507ms[0m
+[90m8:16PM[0m [32mINF[0m [1mno leaks found[0m
+
+[<TARGET_ROOT>\damn-vulnerable-ai-agent\scenarios/dependency-confusion-attack/vulnerable] rc=0
+[90m8:16PM[0m [32mINF[0m [1mscanned ~479 bytes (479 bytes) in 221ms[0m
+[90m8:16PM[0m [32mINF[0m [1mno leaks found[0m
+
+[<TARGET_ROOT>\damn-vulnerable-ai-agent\scenarios/dns-exfil-via-tools/vulnerable] rc=1
+[90m8:16PM[0m [32mINF[0m [1mscanned ~1445 bytes (1.45 KB) in 236ms[0m
+[90m8:16PM[0m [33mWRN[0m [1mleaks found: 1[0m
+
+[<TARGET_ROOT>\damn-vulnerable-ai-agent\scenarios/mcp-capability-escalation/vulnerable] rc=0
+[90m8:16PM[0m [32mINF[0m [1mscanned ~3638 bytes (3.64 KB) in 380ms[0m
+[90m8:16PM[0m [32mINF[0m [1mno leaks found[0m
+
+[<TARGET_ROOT>\damn-vulnerable-ai-agent\scenarios/delegation-privilege-escalation/vulnerable] rc=0
+[90m8:16PM[0m [32mINF[0m [1mscanned ~3664 bytes (3.66 KB) in 829ms[0m
+[90m8:16PM[0m [32mINF[0m [1mno leaks found[0m
+
+[<TARGET_ROOT>\damn-vulnerable-MCP-server\challenges/easy/challenge1/server.py] rc=1
+[90m8:16PM[0m [32mINF[0m [1mscanned ~2497 bytes (2.50 KB) in 221ms[0m
+[90m8:16PM[0m [33mWRN[0m [1mleaks found: 1[0m
+
+[<TARGET_ROOT>\damn-vulnerable-MCP-server\challenges/easy/challenge2/server.py] rc=0
+[90m8:16PM[0m [32mINF[0m [1mscanned ~3507 bytes (3.51 KB) in 671ms[0m
+[90m8:16PM[0m [32mINF[0m [1mno leaks found[0m
+
+[<TARGET_ROOT>\damn-vulnerable-MCP-server\challenges/easy/challenge3/server.py] rc=1
+[90m8:16PM[0m [32mINF[0m [1mscanned ~5891 bytes (5.89 KB) in 245ms[0m
+[90m8:16PM[0m [33mWRN[0m [1mleaks found: 2[0m
+
+[<TARGET_ROOT>\damn-vulnerable-MCP-server\challenges/medium/challenge4/server.py] rc=0
+[90m8:16PM[0m [32mINF[0m [1mscanned ~5243 bytes (5.24 KB) in 560ms[0m
+[90m8:16PM[0m [32mINF[0m [1mno leaks found[0m
+
+[<TARGET_ROOT>\damn-vulnerable-MCP-server\challenges/medium/challenge5/server.py] rc=1
+[90m8:16PM[0m [32mINF[0m [1mscanned ~8387 bytes (8.39 KB) in 617ms[0m
+[90m8:16PM[0m [33mWRN[0m [1mleaks found: 4[0m
+
+[<TARGET_ROOT>\damn-vulnerable-MCP-server\challenges/medium/challenge6/server.py] rc=1
+[90m8:16PM[0m [32mINF[0m [1mscanned ~8042 bytes (8.04 KB) in 221ms[0m
+[90m8:16PM[0m [33mWRN[0m [1mleaks found: 2[0m
+
+[<TARGET_ROOT>\damn-vulnerable-MCP-server\challenges/medium/challenge7/server.py] rc=1
+[90m8:16PM[0m [32mINF[0m [1mscanned ~8555 bytes (8.56 KB) in 248ms[0m
+[90m8:16PM[0m [33mWRN[0m [1mleaks found: 8[0m
+
+[<TARGET_ROOT>\damn-vulnerable-MCP-server\challenges/hard/challenge8/server.py] rc=1
+[90m8:16PM[0m [32mINF[0m [1mscanned ~5811 bytes (5.81 KB) in 215ms[0m
+[90m8:16PM[0m [33mWRN[0m [1mleaks found: 2[0m
+
+[<TARGET_ROOT>\damn-vulnerable-MCP-server\challenges/hard/challenge9/server.py] rc=0
+[90m8:16PM[0m [32mINF[0m [1mscanned ~8624 bytes (8.62 KB) in 233ms[0m
+[90m8:16PM[0m [32mINF[0m [1mno leaks found[0m
+
+[<TARGET_ROOT>\damn-vulnerable-MCP-server\challenges/hard/challenge10/server.py] rc=1
+[90m8:16PM[0m [32mINF[0m [1mscanned ~12332 bytes (12.33 KB) in 234ms[0m
+[90m8:16PM[0m [33mWRN[0m [1mleaks found: 8[0m
