@@ -19,13 +19,13 @@ scanner:
    numbers published in `results/baseline.md` and
    `results/remediation-v0.1.1.md`. Guards against a future edit to a
    triage CSV or raw JSON silently drifting the published numbers.
-4. `scripts/publication-hygiene-check.py` — no unresolved
-   `[YEAR]`/`NOTE (remove before publication)`/`PUBLICATION BLOCKER`/
-   `[link...]`/TODO-TBD placeholder, no `/home/`, `/Users/`, `C:\Users\`,
-   `/tmp/claude-`, or `scratchpad` path fragment, no internal
-   `app.`/`dev.noviscent.ca` or `@noviscent.*` domain reference, no
-   ClickUp URL, no private key header, and no AWS account ID/access key
-   outside the two disclosed DVAA/DVMCP demo fixtures.
+4. `scripts/publication-hygiene-check.py` — no unresolved year placeholder,
+   no unremoved pre-publication note marker, no publication-blocker marker,
+   no link placeholder, no TODO/TBD-before-publication marker, no
+   `/home/`, `/Users/`, `C:\Users\`, `/tmp/claude-`, or `scratchpad` path
+   fragment, no internal `app.`/`dev.noviscent.ca` or `@noviscent.*` domain
+   reference, no ClickUp URL, no private key header, and no AWS account
+   ID/access key outside the two disclosed DVAA/DVMCP demo fixtures.
 
 None of these four scripts touch, run, or require Noviscent's detection
 rule source. All are read-only against the repository's own committed

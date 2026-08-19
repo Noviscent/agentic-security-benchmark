@@ -104,8 +104,9 @@ ALLOWED_BINARY_FILES = set()
 # narrative_exempt_eligible patterns are exempted here, and only for these
 # two files; every other pattern, and every other file (including all of
 # evidence/raw/ and evidence/validation-rerun/), is still scanned
-# unconditionally.
-NARRATIVE_EXEMPT_FILES = {"SECURITY.md", "evidence/redaction-manifest.json"}
+# unconditionally. MAINTENANCE.md is also exempted because it documents the
+# hygiene check patterns themselves in prose.
+NARRATIVE_EXEMPT_FILES = {"SECURITY.md", "evidence/redaction-manifest.json", "MAINTENANCE.md"}
 
 
 def git_tracked_files(repo_root: Path, package_rel: Path):
@@ -285,7 +286,7 @@ def _case_undecodable_file_fails() -> str | None:
     with tempfile.TemporaryDirectory() as t:
         tmp = Path(t)
         pkg = _scratch_repo(tmp)
-        (pkg / "evidence" / "raw" / "binary.bin").write_bytes(b"\xff\xfe\x00\x01\x02\xff")
+        (pkg / "evidence" / "raw" / "binary.bin").write_bytes(b"\x80\x81\x82")
         _commit_all(tmp, "add undecodable binary file")
         findings = _scan_scratch(tmp, pkg)
         if not any("undecodable" in f[2] for f in findings):
